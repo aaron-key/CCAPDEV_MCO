@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const imageUpload = document.getElementById("imageUpload");
+const imageUpload = document.getElementById("imageUpload");
     const profileImage = document.getElementById("profileImage");
     const profileDescription = document.getElementById("profileDescription");
     const displayNameInput = document.getElementById("displayName");
@@ -11,12 +11,37 @@ document.addEventListener("DOMContentLoaded", function() {
         return; // Stop the rest of the script from running
     }
 
-    // Load existing profile data from localStorage
-    // If no data exists, initialize with default values
-    const userData = JSON.parse(localStorage.getItem("userProfile")) || {};
-    if (userData.image) profileImage.src = userData.image;
-    if (userData.description) profileDescription.value = userData.description;
-    if (userData.displayName) displayNameInput.value = userData.displayName;
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedUserEmail = urlParams.get("user"); // Get user email from URL
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    
+    let profileKey = requestedUserEmail ? `profile_${requestedUserEmail}` : `profile_${currentUser.email}`;
+    let userProfile = JSON.parse(localStorage.getItem(profileKey)) || {}; // ✅ Fetch specific profile
+
+    if (requestedUserEmail && requestedUserEmail !== currentUser.email) {
+        // Viewing another user's profile
+        if (!userProfile.displayName && !userProfile.description && !userProfile.image) {
+            alert("User profile not found.");
+            window.location.href = "reservations.html";
+            return;
+        }
+
+        profileImage.src = userProfile.image || "img/default-avatar.jpg";
+        displayNameInput.value = userProfile.displayName || requestedUserEmail;
+        profileDescription.value = userProfile.description || "No description available.";
+
+        // Disable editing fields for another user's profile
+        displayNameInput.disabled = true;
+        profileDescription.disabled = true;
+        imageUpload.style.display = "none"; // Hide image upload
+        saveProfile.style.display = "none"; // Hide save button
+        deleteSection.style.display = "none"; // Hide delete account section
+    } else {
+        // Viewing own profile (normal functionality)
+        if (userProfile.image) profileImage.src = userProfile.image;
+        if (userProfile.description) profileDescription.value = userProfile.description;
+        if (userProfile.displayName) displayNameInput.value = userProfile.displayName;
+    }
 
     // Image upload logic
     imageUpload.addEventListener("change", function(event) {
@@ -32,12 +57,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Save profile logic
     saveProfile.addEventListener("click", function() {
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser || !currentUser.email) {
+            alert("Error: No logged-in user detected.");
+            return;
+        }
+
         const updatedProfile = {
             image: profileImage.src,
             description: profileDescription.value.trim(),
             displayName: displayNameInput.value.trim()
         };
-        localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+
+        localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(updatedProfile)); // stores profile data by email
         alert("Profile updated successfully!");
     });
 
@@ -48,27 +80,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Delete account logic
     document.getElementById("deleteAccount").addEventListener("click", function() {
-    if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+        if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
 
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!currentUser || !currentUser.email) {
-        alert("Unable to identify user.");
-        return;
-    }
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser || !currentUser.email) {
+            alert("Unable to identify user.");
+            return;
+        }
 
-    // Remove from users list
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    users = users.filter(u => u.email !== currentUser.email);
-    localStorage.setItem("users", JSON.stringify(users));
+        // Remove from users list
+        let users = JSON.parse(localStorage.getItem("users")) || [];
+        users = users.filter(u => u.email !== currentUser.email);
+        localStorage.setItem("users", JSON.stringify(users));
 
-    // Remove all user-related data
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("userSession");
-    localStorage.removeItem("userProfile");
+        // Remove all user-related data
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("userSession");
+        localStorage.removeItem("userProfile");
 
-    // To-add later: remove reservations tied to this user (after implementation)
-
-    alert("Your account has been deleted.");
-    window.location.href = "auth.html";
-});
+        alert("Your account has been deleted.");
+        window.location.href = "auth.html";
+    });
 });

@@ -30,11 +30,8 @@ document.getElementById("logout").addEventListener("click", function() {
  * @param {*} lab 
  */
 function parseReservationsByLab(lab) {
-    //let reservationList = [];
-    //localStorage.getItem("reservationList");
-
-
-    //return reservationList;
+    let reservationList = JSON.parse(localStorage.getItem("reservationList")) || [];
+    return reservationList.filter(reservation => reservation.labSelection === lab);
 }
 
 /**
@@ -42,7 +39,8 @@ function parseReservationsByLab(lab) {
  * @param {*} student 
  */
 function parseReservationsByStudent(student) {
-
+    let reservationList = JSON.parse(localStorage.getItem("reservationList")) || [];
+    return reservationList.filter(reservation => reservation.userEmail === student);
 }
 
 
@@ -51,14 +49,34 @@ function parseReservationsByStudent(student) {
  * date & time || # of available slots
  */
 function displaySlots() {
-    // 
+    let reservationList = JSON.parse(localStorage.getItem("reservationList")) || [];
+    let availableSlots = {};
+
+    ["labA", "labB", "labC1", "labC2"].forEach(lab => {
+        availableSlots[lab] = {
+            "10:00-10:30": 3,
+            "10:30-11:00": 3,
+            "11:00-11:30": 3
+        };
+    });
+
+    reservationList.forEach(reservation => {
+        if (availableSlots[reservation.labSelection] && availableSlots[reservation.labSelection][reservation.slotTime]) {
+            availableSlots[reservation.labSelection][reservation.slotTime]--; // reduce available slots
+        }
+    });
+
+    console.log("Available Slots:", availableSlots); // testing output (for debugging purposes)
+    return availableSlots;
 }
 
 /**
  * 
  */
-function displayReservedSlots() {
-
+function displayReservedSlots(lab) {
+    let reservations = parseReservationsByLab(lab);
+    console.log(`Reservations for ${lab}:`, reservations);
+    return reservations;
 }
 
 
@@ -70,7 +88,7 @@ function generateReservationID(reservationList) {
     let generatedID = 0;
 
     if(reservationList.length === 0) {
-        generateID = 1;
+        generatedID = 1;
     } else {
         for(let i = 0; i < reservationList.length; i++) {
             if(generatedID < reservationList[i].reservationID) {
@@ -90,9 +108,10 @@ function generateReservationID(reservationList) {
 function addReservation() {
     // retrieve the list of reservations and form elements
     let reservationList = localStorage.getItem("reservationList");
-    let labSelection = document.getElementById("labSelect");
-    let slotTime = document.getElementById("labTime");
-    let slotSeat = document.getElementById("labSeat");
+    let labSelection = document.getElementById("labSelect").value;
+    let slotTime = document.getElementById("labTime").value;
+    let slotSeat = document.getElementById("labSeat").value;
+    let currentUser = JSON.parse(localStorage.getItem("currentUser")); // gets logged-in user
     let reservationID;
     let hasOverlap;
     let newReservation;
@@ -102,25 +121,29 @@ function addReservation() {
         reservationList = JSON.parse(reservationList);
 
         // if parsed object is not array, set as empty array
-        if(!Array.isArray(reservationList)) { 
-            reservationList = [];
+        if (!Array.isArray(reservationList)) { 
+            reservationList = []; 
         }
     } catch(e) {
         reservationList = []; // start as empty if no reservation lists exist
     }
 
-    // get values and prepare to create a new reservation
-    labSelection = labSelection.options[labSelection.selectedIndex].value;
-    slotTime = slotTime.options[slotTime.selectedIndex].value;
-    slotSeat = slotSeat.options[slotSeat.selectedIndex].value;
-    reservationID = generateReservationID(reservationList);
+    // ensure user exists
+    if (!currentUser || !currentUser.email) {
+        alert("Error: No logged-in user detected.");
+        return;
+    }
+
+    // Retrieve user's stored display name (for display purposes)
+    let userProfile = JSON.parse(localStorage.getItem(`profile_${currentUser.email}`)) || {};
+    let displayName = userProfile.displayName || currentUser.email;
 
     // ensure that the reservation does not overlap with an existing reservation
     hasOverlap = reservationList.some(reservation =>
         reservation.labSelection === labSelection &&
         reservation.slotTime === slotTime &&
         reservation.slotSeat === slotSeat
-    )
+    );
 
     if (hasOverlap) {
         alert("Reservation already exists");
@@ -128,19 +151,22 @@ function addReservation() {
     }
 
     // create new reservation object
+    reservationID = generateReservationID(reservationList);
     newReservation = {
         reservationID: reservationID,
         labSelection: labSelection,
         slotTime: slotTime,
-        slotSeat: slotSeat
-    }
+        slotSeat: slotSeat,
+        userEmail: currentUser.email,
+        displayName: displayName
+    };
 
     // push the reservation object onto the list
-    reservationList.push(newReservation)
+    reservationList.push(newReservation);
 
     // save the list
     localStorage.setItem("reservationList", JSON.stringify(reservationList));
-    alert("Reservation successfully added");
+    alert("Reservation successfully added!");
 }
 
 // temp function to delete reservations
