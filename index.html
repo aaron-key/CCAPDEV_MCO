@@ -7,6 +7,38 @@
 <body>
     <h2>Welcome to the Lab Reservation System</h2>
     <div id="dashboardSection">
+        <form id="reserveSection">
+            <label>Select Lab:</label>
+            <select id="labSelect"> <!--these values are temporary-->
+                <option value="default"selected disabled>---select a lab---</option>
+                <option value="labA">Lab A</option>
+                <option value="labB">Lab B</option>
+                <option value="labC1">Lab C1</option>
+                <option value="labC2">Lab C2</option>
+            </select><br>
+
+            <label>Select Time:</label>
+            <select id="labTime">
+                <option value="default" selected disabled>---select a time---</option>
+                <option value="10:00-10:30">10:00 - 10:30</option>
+                <option value="10:30-11:00">10:30 - 11:00</option>
+                <option value="11:00-11:30">11:00 - 11:30</option>
+            </select><br>
+
+            <label>Select Seat:</label>
+            <select id="labSeat">
+                <option value="default" selected disabled>---select a seat---</option>
+                <option value="seat1">1</option>
+                <option value="seat2">2</option>
+                <option value="seat3">3</option>
+            </select><br>
+
+            <button id="reserveSlots">Reserve Slot</button>
+            <button id="removeReservations">Remove Reservations (temp)</button>
+        </form>
+        <table>
+            <!--update when lab selection changes-->
+        </table>
         <button onclick="window.location.href='profile.html'">Settings</button>
         <button id="logout">Logout</button>
     </div>
