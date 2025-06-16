@@ -219,43 +219,38 @@ function parseSlotSeatsPerTime(labSelection, labTime) {
  * @param {String} labSelection lab to parse time slots for
  * @returns list of available time slots and the number of seats
  */
-function parseSlotTimes(labSelection) {
-    // [] should include dates
-    // returns the list of a lab's available time slots and the number of seats available
-    const numberOfTimeSlots = 17; // 17 slots from 8:00 to 16:00
-    let hour = 8;
-    let minute = "00";
-    let isHalfHour = false;
-    let slotTime;
-    let slotCount;
+function displaySlots() {
+    let reservationList = JSON.parse(localStorage.getItem("reservationList")) || [];
+    let availableSlots = {};
 
-    let reservationList = parseReservations();
-    let labTimeList = [];
+    ["labA", "labB", "labC1", "labC2"].forEach(lab => {
+        availableSlots[lab] = {
+            "10:00-10:30": 3,
+            "10:30-11:00": 3,
+            "11:00-11:30": 3
+        };
+    });
 
-    // filter the reservations by lab
-    reservationList = reservationList.filter(reservation => reservation.labSelection === labSelection);
-
-    for(i = 0; i < numberOfTimeSlots; i++) {
-        slotTime = `${hour}:${minute}`;
-        slotCount = parseSlotSeatsPerTime(labSelection, slotTime).length;
-
-        // push the time slot and the no. of available seats onto the list
-        labTimeList.push({
-                slotTime: slotTime,
-                slotCount: slotCount
-            })
-
-        if(isHalfHour) {
-            hour++;
-            minute = "00";
-        } else {
-            minute = "30";
+    reservationList.forEach(reservation => {
+        if (availableSlots[reservation.labSelection] && availableSlots[reservation.labSelection][reservation.slotTime]) {
+            availableSlots[reservation.labSelection][reservation.slotTime]--; // reduce available slots
         }
-        isHalfHour = !isHalfHour;
-    }
+    });
 
-    return labTimeList;
+    console.log("Available Slots:", availableSlots); // testing output (for debugging purposes)
+    return availableSlots;
 }
+
+/**
+ * 
+ */
+function displayReservedSlots(lab) {
+    let reservations = parseReservationsByLab(lab);
+    console.log(`Reservations for ${lab}:`, reservations);
+    return reservations;
+}
+
+
 
 /**
  * generates a reservationID for a reservation object
@@ -263,10 +258,15 @@ function parseSlotTimes(labSelection) {
 function generateReservationID(reservationList) {
     let generatedID = 0;
 
-    for(let i = 0; i < reservation.length; i++) {
-        if(generatedID < reservationList[i].reservationID) {
-            generatedID = reservationList[i].reservationID;
+    if(reservationList.length === 0) {
+        generatedID = 1;
+    } else {
+        for(let i = 0; i < reservationList.length; i++) {
+            if(generatedID < reservationList[i].reservationID) {
+                generatedID = reservationList[i].reservationID;
+            }
         }
+        
     }
 
     // return the highest reservationID plus 1 to create a new reservationID
@@ -284,11 +284,10 @@ function addReservation() {
 
     // retrieve the list of reservations and form elements
     let reservationList = localStorage.getItem("reservationList");
-    let student = JSON.parse(localStorage.getItem("currentUser")).name;
-    let labSelection = document.getElementById("labSelect");
-    let slotTime = document.getElementById("labTime");
-    let slotSeat = document.getElementById("labSeat");
-    let slotDate = document.getElementById("labDate");
+    let labSelection = document.getElementById("labSelect").value;
+    let slotTime = document.getElementById("labTime").value;
+    let slotSeat = document.getElementById("labSeat").value;
+    let currentUser = JSON.parse(localStorage.getItem("currentUser")); // gets logged-in user
     let reservationID;
     let hasOverlap;
     let newReservation;
@@ -298,26 +297,28 @@ function addReservation() {
         reservationList = JSON.parse(reservationList);
 
         // if parsed object is not array, set as empty array
-        if(!Array.isArray(reservationList)) { 
-            reservationList = [];
+        if (!Array.isArray(reservationList)) { 
+            reservationList = []; 
         }
     } catch(e) {
         reservationList = []; // start as empty if no reservation lists exist
     }
 
-    // get values and prepare to create a new reservation
-    labSelection = labSelection.options[labSelection.selectedIndex].value;
-    slotTime = slotTime.options[slotTime.selectedIndex].value;
-    slotSeat = slotSeat.options[slotSeat.selectedIndex].value;
-    slotDate = slotDate.value.toString();
-    reservationID = generateReservationID(reservationList);
+    // ensure user exists
+    if (!currentUser || !currentUser.email) {
+        alert("Error: No logged-in user detected.");
+        return;
+    }
+
+    // Retrieve user's stored display name (for display purposes)
+    let userProfile = JSON.parse(localStorage.getItem(`profile_${currentUser.email}`)) || {};
+    let displayName = userProfile.displayName || currentUser.email;
 
     // ensure that the reservation does not overlap with an existing reservation
     hasOverlap = reservationList.some(reservation =>
         reservation.labSelection === labSelection &&
         reservation.slotTime === slotTime &&
-        reservation.slotSeat === slotSeat &&
-        reservation.slotDate === slotDate
+        reservation.slotSeat === slotSeat
     );
 
     if (hasOverlap) {
@@ -326,19 +327,23 @@ function addReservation() {
     }
 
     // create new reservation object
+    reservationID = generateReservationID(reservationList);
     newReservation = {
         reservationID: reservationID,
         studentID: studentID,
         labSelection: labSelection,
         slotTime: slotTime,
         slotSeat: slotSeat,
-        slotDate: slotDate
-    }
-    
-    // push the reservation and save the list locally
+        userEmail: currentUser.email,
+        displayName: displayName
+    };
+
+    // push the reservation object onto the list
     reservationList.push(newReservation);
+
+    // save the list
     localStorage.setItem("reservationList", JSON.stringify(reservationList));
-    alert("Reservation successfully added");
+    alert("Reservation successfully added!");
 }
 
 //========================================================================================================
