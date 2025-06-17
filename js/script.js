@@ -26,15 +26,26 @@ document.getElementById("logout").addEventListener("click", function() {
 document.addEventListener("DOMContentLoaded", initializeDashboard);
 
 // update options when new options are selected
+document.getElementById("selectLab").addEventListener("change", function() {
+    updateSelectSeat();
+    updateSelectTime();
+});
+
 document.getElementById("selectLabStartTime").addEventListener("change", generateEndTimeSlots);
 
 // reserve and delete slots
 document.getElementById("reserveSlot").addEventListener("click", addReservation);
-document.getElementById("removeReservations").addEventListener("click", deleteAllReservations);
+document.getElementById("removeReservations").addEventListener("click", function() {
+    deleteAllReservations();
+    initializeDashboard();
+});
 
 // create and delete labs
 document.getElementById("createLab").addEventListener("click", addLab);
-document.getElementById("removeLabs").addEventListener("click", deleteAllLabs);
+document.getElementById("removeLabs").addEventListener("click", deleteAllLabs, function() {
+    deleteAllLabs();
+    initializeDashboard();
+});
 
 // lab creation =====================================================
 
@@ -158,8 +169,6 @@ function generateTimeList() {
             list.push(`${hour}:${min}`);
 
             currentTime.setMinutes(currentTime.getMinutes() + 30);
-
-            console.log(currentTime);
         }
     } else {
         alert("Please input both start and end times.");
@@ -175,9 +184,6 @@ function addLab() {
     let seatList = generateSeatList();
     let timeList = generateTimeList();
     let newLab;
-
-    console.log(seatList);
-    console.log(timeList);
 
     if(seatList.length == 0 || timeList.length == 0) {
         alert("Failed to create lab");
@@ -250,14 +256,71 @@ function initializeDashboard() {
     } else {
         generateStartTimeSlots();
     }
+
+    updateSelectTime();
+    updateSelectSeat();
 }
 
 function updateSelectTime() {
+    let labList = retrieveLabList();
+    let selectedLabID = document.getElementById("selectLab").value;
+    let slots;
 
+    let select = document.getElementById("selectTime");
+    let defaultOption = document.createElement("option");
+
+    // clear times slots shown and add the default option
+    select.innerHTML = "";
+    defaultOption.value = "";
+    defaultOption.text = "---select a time---";
+    defaultOption.selected = true;
+    defaultOption.disabled = true;
+    select.appendChild(defaultOption);
+
+    // find the lab and retrieve its time slot list
+    selectedLabID = labList.find(l => l.labID == selectedLabID);
+    slots = selectedLabID.timeList;
+
+    // [] add removing time slots at max capacity
+
+    // repopulate the dropdown list with the lab's times
+    for(let i = 0; i < slots.length; i++) {
+        let option = document.createElement("option");
+        option.value = slots[i];
+        option.textContent = slots[i];
+        select.appendChild(option);
+    }
 }
 
 function updateSelectSeat() {
+    let labList = retrieveLabList();
+    let selectedLabID = document.getElementById("selectLab").value;
+    let seats;
 
+    let select = document.getElementById("selectSeat");
+    let defaultOption = document.createElement("option");
+
+    // clear times slots shown and add the default option
+    select.innerHTML = "";
+    defaultOption.value = "";
+    defaultOption.text = "---select a seat---";
+    defaultOption.selected = true;
+    defaultOption.disabled = true;
+    select.appendChild(defaultOption);
+
+    // find the lab and retrieve its time slot list
+    selectedLabID = labList.find(l => l.labID == selectedLabID);
+    seats = selectedLabID.seatList;
+
+    // [] add removing time slots at max capacity
+
+    // repopulate the dropdown list with the lab's times
+    for(let i = 0; i < seats.length; i++) {
+        let option = document.createElement("option");
+        option.value = seats[i];
+        option.textContent = seats[i];
+        select.appendChild(option);
+    }
 }
 
 //
@@ -412,6 +475,7 @@ function addReservation() {
         studentID = currentUser.studentID;
     } else {
         studentID = document.getElementById("studentIDInput").value;
+        console.log(studentID);
     }
 
     // check for overlapping reservations
@@ -424,6 +488,12 @@ function addReservation() {
 
     if(hasOverlap) {
         alert("Slot is already reserved.")
+        return;
+    }
+
+    // for lab techs, check if student ID was inputted
+    if(studentID == "") {
+        alert("Please input student ID.");
         return;
     }
 
