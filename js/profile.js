@@ -27,7 +27,7 @@ const imageUpload = document.getElementById("imageUpload");
         // Viewing non-existing user's profile
         if (!userProfile.displayName && !userProfile.description && !userProfile.image) {
             alert("User profile not found.");
-            window.location.href = "reservations.html";
+            window.location.href = "dashboard.html";
             return;
         }
 
