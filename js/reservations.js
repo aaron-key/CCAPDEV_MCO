@@ -1,48 +1,79 @@
-// Kicks users to auth.html if not logged in
-document.addEventListener("DOMContentLoaded", function() {
-    const userSession = localStorage.getItem("userSession");
+let dateOffset = 0;
 
-    // Redirect unauthorized users
-    if (!userSession || userSession !== "loggedIn") {
-        window.location.href = "auth.html";
-        return;
-    }
+function renderLabSchedule(labID) {
+    const reservationView = document.getElementById("reservationView");
+    const summary = document.getElementById("seatSummary");
+    const currentDay = new Date();
+    currentDay.setDate(currentDay.getDate() + dateOffset);
+    const dateString = currentDay.toISOString().split("T")[0];
+    const reservations = retrieveReservationList();
+    const seats = ["A", "B", "C"];
+    const timeSlots = ["10:00-10:30", "10:30-11:00", "11:00-11:30"];
 
-    const reservationsTable = document.getElementById("reservationsTable").querySelector("tbody");
-    const filterType = document.getElementById("labFilter");
-    const filterBtn = document.getElementById("filterReservations");
+    let totalSlots = seats.length * timeSlots.length;
+    let reservedCount = 0;
 
-    // Function to display reservations (calls script.js functions)
-    function loadReservations(lab = "all") {
-        let reservations = JSON.parse(localStorage.getItem("reservationList")) || [];
-        reservationsTable.innerHTML = ""; // Clear previous entries
+    reservationView.innerHTML = "";
 
-        if (lab !== "all") {
-            reservations = parseReservationsByLab(lab);
-        }
+    // header row
+    const header = reservationView.insertRow();
+    header.insertCell().textContent = "Time";
+    seats.forEach(seat => {
+        const th = document.createElement("th");
+        th.textContent = `Seat ${seat}`;
+        header.appendChild(th);
+    });
 
-        reservations.forEach(reservation => {
-            let displayName = reservation.displayName || reservation.userEmail;
+    timeSlots.forEach(time => {
+        const row = reservationView.insertRow();
+        row.insertCell().textContent = time;
 
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${reservation.labSelection}</td>
-                <td>${reservation.slotTime}</td>
-                <td>${reservation.slotSeat}</td>
-                <td>
-                    <a href="profile.html?user=${encodeURIComponent(reservation.userEmail)}">${displayName}</a>
-                </td>
-            `;
-            reservationsTable.appendChild(row);
+        seats.forEach(seat => {
+            const cell = row.insertCell();
+            const match = reservations.find(r =>
+                r.labID === labID &&
+                r.reservedDate === dateString &&
+                r.reservedTime === time &&
+                r.reservedSeat === seat
+            );
+
+            if (match) {
+                const link = document.createElement("a");
+                link.href = `profile.html?user=${encodeURIComponent(match.studentID)}`;
+                link.textContent = match.displayName || "Reserved";
+                cell.appendChild(link);
+                reservedCount++;
+            } else {
+                cell.textContent = "Open";
+            }
         });
-    }
+    });
 
-    // Attach filter functionality
-    if (filterBtn) {
-        filterBtn.addEventListener("click", function() {
-            loadReservations(filterType.value);
-        });
-    }
+    const available = totalSlots - reservedCount;
+    summary.textContent = `Seats available: ${available} / ${totalSlots} on ${dateString}`;
+}
 
-    loadReservations(); // Load all reservations on page load
+document.getElementById("labSelector").addEventListener("change", () => {
+    const selectedLab = document.getElementById("labSelector").value;
+    renderLabSchedule(selectedLab);
+});
+
+// calls the function to render the schedule on page load
+document.addEventListener("DOMContentLoaded", () => {
+    const labSelector = document.getElementById("labSelector");
+    renderLabSchedule(labSelector.value);
+});
+
+document.getElementById("nextDay").addEventListener("click", () => {
+    if (dateOffset < 6) {
+        dateOffset++;
+        renderLabSchedule(document.getElementById("labSelector").value);
+    }
+});
+
+document.getElementById("prevDay").addEventListener("click", () => {
+    if (dateOffset > 0) {
+        dateOffset--;
+        renderLabSchedule(document.getElementById("labSelector").value);
+    }
 });

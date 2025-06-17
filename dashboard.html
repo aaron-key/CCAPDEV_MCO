@@ -3,6 +3,7 @@
 <head>
     <title>Lab Reservation Dashboard</title>
     <script src="js/script.js" defer></script>
+    <script src="js/reservations.js" defer></script>
 </head>
 <body>
     <h2>Welcome to the Lab Reservation System</h2>
@@ -39,6 +40,17 @@
             <button id="reserveSlot">Reserve Slot</button>
             <button id="removeReservations">Remove Reservations (temp)</button>
         </form>
+        <h3 id="currentDateLabel"></h3>
+        <button id="prevDay">← Previous</button>
+        <button id="nextDay">Next →</button>
+        <label for="labSelector">Choose Lab:</label>
+        <select id="labSelector">
+            <option value="labA">Lab A</option>
+            <option value="labB">Lab B</option>
+            <option value="labC1">Lab C1</option>
+            <option value="labC2">Lab C2</option>
+        </select>
+        <div id="seatSummary"></div>
         <table id="reservationView">
             <!--update when lab selection changes-->
         </table>
