@@ -21,8 +21,10 @@ const imageUpload = document.getElementById("imageUpload");
         : `profile_${currentUser.studentID}`;
     let userProfile = JSON.parse(localStorage.getItem(profileKey)) || {}; // ✅ Fetch specific profile
 
-    if (requestedUserID && requestedUserID !== currentUser.studentID) {
-        // Viewing another user's profile
+    const isOwnProfile = !requestedUserID || parseInt(requestedUserID) === currentUser.studentID;
+
+    if (!isOwnProfile) {
+        // Viewing non-existing user's profile
         if (!userProfile.displayName && !userProfile.description && !userProfile.image) {
             alert("User profile not found.");
             window.location.href = "reservations.html";
@@ -31,6 +33,7 @@ const imageUpload = document.getElementById("imageUpload");
 
         profileImage.src = userProfile.image || "img/default-avatar.jpg";
         displayNameInput.value = userProfile.displayName || requestedUserID;
+        showUserReservations(parseInt(requestedUserID));
         profileDescription.value = userProfile.description || "No description available.";
 
         // Disable editing fields for another user's profile
@@ -44,6 +47,7 @@ const imageUpload = document.getElementById("imageUpload");
         if (userProfile.image) profileImage.src = userProfile.image;
         if (userProfile.description) profileDescription.value = userProfile.description;
         if (userProfile.displayName) displayNameInput.value = userProfile.displayName;
+        showUserReservations(currentUser.studentID);
     }
 
     // Image upload logic
@@ -105,3 +109,31 @@ const imageUpload = document.getElementById("imageUpload");
         window.location.href = "auth.html";
     });
 });
+
+function showUserReservations(userID) {
+    const reservationTable = document.getElementById("userReservationTable");
+    const allReservations = retrieveReservationList();
+    const userReservations = allReservations.filter(r => r.studentID === parseInt(userID));
+
+    if (userReservations.length === 0) {
+        reservationTable.innerHTML = "<tr><td colspan='4' style='text-align:center;'>This user has no reservations yet.</td></tr>";
+        return;
+    }
+
+    reservationTable.innerHTML = "";
+
+    const header = reservationTable.insertRow();
+    ["Lab", "Date", "Time", "Seat"].forEach(label => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        header.appendChild(th);
+    });
+
+    userReservations.forEach(res => {
+        const row = reservationTable.insertRow();
+        row.insertCell().textContent = res.labID;
+        row.insertCell().textContent = res.reservedDate;
+        row.insertCell().textContent = res.reservedTime;
+        row.insertCell().textContent = res.reservedSeat;
+    });
+}
