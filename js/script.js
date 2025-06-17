@@ -1,25 +1,22 @@
 // When the document is loaded, check if the user is logged in
 // If logged in, show the dashboard; otherwise, show auth.html
-document.addEventListener("DOMContentLoaded", function() {
-    const userSession = localStorage.getItem("userSession");
+// document.addEventListener("DOMContentLoaded", function() {
+//     const userSession = localStorage.getItem("userSession");
 
-    if (!userSession || userSession !== "loggedIn") {
-        window.location.href = "auth.html"; // Redirect unauthorized users
-    } else {
-        document.getElementById("dashboardSection").style.display = "block"; // Ensure dashboard is visible
-    }
-});
+//     if (!userSession || userSession !== "loggedIn") {
+//         window.location.href = "auth.html"; // Redirect unauthorized users
+//     } else {
+//         document.getElementById("dashboardSection").style.display = "block"; // Ensure dashboard is visible
+//     }
+// });
 
-// Logout Logic
-document.getElementById("logout").addEventListener("click", function() {
-    localStorage.removeItem("userSession"); // Clear login session
-    localStorage.removeItem("currentUser"); // Remove user data
-    alert("Logged out successfully.");
-    window.location.href = "auth.html"; // Redirect to login/register page
-});
-
-
-
+// // Logout Logic
+// document.getElementById("logout").addEventListener("click", function() {
+//     localStorage.removeItem("userSession"); // Clear login session
+//     localStorage.removeItem("currentUser"); // Remove user data
+//     alert("Logged out successfully.");
+//     window.location.href = "auth.html"; // Redirect to login/register page
+// });
 
 // Dashboard logic
 
@@ -156,210 +153,108 @@ function generateReservationID() {
 }
 
 function addReservation() {
-
-}
-
-function viewReservation() {
-
-}
-
-/**
- * parses the list of reservations stored locally and returns the list of reservations as an array
- * @returns array of reservations
- */
-function parseReservations() {
-    let reservationList = localStorage.getItem("reservationList")
-
-    // convert the JSON list into an array
-    try {
-        reservationList = JSON.parse(reservationList);
-
-        // if parsed object is not array, set as empty array
-        if(!Array.isArray(reservationList)) { 
-            reservationList = [];
-        }
-    } catch(e) {
-        reservationList = []; // start as empty if no reservations exist
-    }
-
-    return reservationList;
-}
-
-/** 
- * parses the list of reservations for a lab and returns the list 
- * @param {String} labSelection - lab to which to parse seats for
- * @param {String} labTime - time interval to which to parse seats for
- * @returns list of available seats per time slot
- */
-function parseSlotSeatsPerTime(labSelection, labTime) {
-    // [] should also include date, for now only does everything on a single day
-    // [] get values from lab's so that number of seats and seat letters is dynamic
-    // returns the list of a lab's available seats at a given time
-    const numberOfSeats = 10;
-    const seatLetters = "ABCDEFGHIJ";
-    let reservationList = parseReservations();
-    let labSeatList = [];
-
-    // filter the reservations by lab, then by time interval
-    reservationList = reservationList.filter(reservation => reservation.labSelection === labSelection);
-    reservationList = reservationList.filter(reservation => reservation.labTime === labTime);
-
-    // assume 10 seats per lab, add lab seats to the list if they were not already reserved
-    for(i = 0; i < numberOfSeats; i++) {
-        if(!reservationList.some(reservation => reservation.labSeat === seatLetters.charAt(i))) {
-            labSeatList.push(seatLetters.charAt(i));
-        }
-    }
-
-    return labSeatList;
-}
-
-/**
- * parses the list of reservations for a lab and returns the list of  time slots and the no. of seats available per interval
- * @param {String} labSelection lab to parse time slots for
- * @returns list of available time slots and the number of seats
- */
-function displaySlots() {
-    let reservationList = JSON.parse(localStorage.getItem("reservationList")) || [];
-    let availableSlots = {};
-
-    ["labA", "labB", "labC1", "labC2"].forEach(lab => {
-        availableSlots[lab] = {
-            "10:00-10:30": 3,
-            "10:30-11:00": 3,
-            "11:00-11:30": 3
-        };
-    });
-
-    reservationList.forEach(reservation => {
-        if (availableSlots[reservation.labSelection] && availableSlots[reservation.labSelection][reservation.slotTime]) {
-            availableSlots[reservation.labSelection][reservation.slotTime]--; // reduce available slots
-        }
-    });
-
-    console.log("Available Slots:", availableSlots); // testing output (for debugging purposes)
-    return availableSlots;
-}
-
-/**
- * 
- */
-function displayReservedSlots(lab) {
-    let reservations = parseReservationsByLab(lab);
-    console.log(`Reservations for ${lab}:`, reservations);
-    return reservations;
-}
-
-
-
-/**
- * generates a reservationID for a reservation object
- */
-function generateReservationID(reservationList) {
-    let generatedID = 0;
-
-    if(reservationList.length === 0) {
-        generatedID = 1;
-    } else {
-        for(let i = 0; i < reservationList.length; i++) {
-            if(generatedID < reservationList[i].reservationID) {
-                generatedID = reservationList[i].reservationID;
-            }
-        }
-        
-    }
-
-    // return the highest reservationID plus 1 to create a new reservationID
-    return generatedID + 1;
-}
-
-/**
- * adds a reservation 
- */
-function addReservation() {
-    // [] need to record date of request
-    // [] update student and currentUser to reflect an ID instead
-    // [] need to add the option for anon reservation
-    // [] slotTime should also include the date
-
-    // retrieve the list of reservations and form elements
-    let reservationList = localStorage.getItem("reservationList");
-    let labSelection = document.getElementById("labSelect").value;
-    let slotTime = document.getElementById("labTime").value;
-    let slotSeat = document.getElementById("labSeat").value;
-    let currentUser = JSON.parse(localStorage.getItem("currentUser")); // gets logged-in user
-    let reservationID;
+    // retrieve info from form and retrieve reservation list
+    let reservationList = retrieveReservationList();
+    let reservationID = generateReservationID();
+    let studentID;
+    let labID = document.getElementById("selectLab").value;
+    let requestDate = new Date().toISOString();
+    let reservedDate = document.getElementById("selectDate").value;
+    let reservedTime = document.getElementById("selectTime").value;
+    let reservedSeat = document.getElementById("selectSeat").value;
     let hasOverlap;
     let newReservation;
 
-    // parse the string into an array
-    try {
-        reservationList = JSON.parse(reservationList);
-
-        // if parsed object is not array, set as empty array
-        if (!Array.isArray(reservationList)) { 
-            reservationList = []; 
-        }
-    } catch(e) {
-        reservationList = []; // start as empty if no reservation lists exist
-    }
-
-    // ensure user exists
-    if (!currentUser || !currentUser.email) {
-        alert("Error: No logged-in user detected.");
-        return;
-    }
-
-    // Retrieve user's stored display name (for display purposes)
-    let userProfile = JSON.parse(localStorage.getItem(`profile_${currentUser.email}`)) || {};
-    let displayName = userProfile.displayName || currentUser.email;
-
-    // ensure that the reservation does not overlap with an existing reservation
+    // check for overlapping reservations
     hasOverlap = reservationList.some(reservation =>
-        reservation.labSelection === labSelection &&
-        reservation.slotTime === slotTime &&
-        reservation.slotSeat === slotSeat
-    );
+        reservation.labID === labID &&
+        reservation.reservedDate === reservedDate &&
+        reservation.reservedTime === reservedTime &&
+        reservation.reservedSeat === reservedSeat
+    )
 
-    if (hasOverlap) {
-        alert("Reservation already exists");
+    if(hasOverlap) {
+        alert("Slot is already reserved.")
         return;
     }
 
-    // create new reservation object
-    reservationID = generateReservationID(reservationList);
+    // create a new reservation, push it onto the list, and store locally
     newReservation = {
         reservationID: reservationID,
         studentID: studentID,
-        labSelection: labSelection,
-        slotTime: slotTime,
-        slotSeat: slotSeat,
-        userEmail: currentUser.email,
-        displayName: displayName
-    };
+        labID: labID,
+        requestDate: requestDate,
+        reservedDate: reservedDate,
+        reservedTime: reservedTime,
+        reservedSeat: reservedSeat,
+    }
 
-    // push the reservation object onto the list
     reservationList.push(newReservation);
-
-    // save the list
     localStorage.setItem("reservationList", JSON.stringify(reservationList));
-    alert("Reservation successfully added!");
+    alert("Reservation added successfully"); // temporary alert for checking
+}
+
+function viewReservation() {
+    // update table with relevant information about reservations
+    let reservationList = retrieveReservationList();
+    let reservationView = document.getElementById("reservationView");
+    let studentID = localStorage.getItem("currentUser")
+
+    // remove previous information
+    reservationView.innerHTML = '';
+
+    // filter the list to reservations belonging to the student
+    reservationList.filter(reservation => reservation.studentID == studentID);
+
+    for(let i = 0; i < reservationList.length; i++) {
+        let row = reservationView.insertRow();
+        let labID = row.insertCell(0);
+        let reservedDate = row.innerCell(1);
+        let reservedTime = row.innerCell(2);
+        let reservedSeat = row.innerCell(3);
+        let requestDate = row.insertCell(4);
+        labID.innerHTML = reservationView[i].labID;
+        reservedDate = reservationList[i].reservedDate;
+        reservedTime = reservationList[i].reservedTime;
+        reservedSeat.innerHTML = reservationList[i].reservedSeat;
+        requestDate.innerHTML = reservationList[i].requestDate;
+    }
+
+}
+
+function editReservation() {
+    // get reservation ID to edit reservation details
+}
+
+function deleteReservation() {
+    let reservationList = retrieveReservationList();
+
+}
+
+function updateTimeSelection() {
+    // compare the labs seats and times against those found under reservations
+    // each labs has a set of seats and time slots per day
+    let reservationList = retrieveReservationList();
+
+}
+
+function updateSeatSelection() {
+    // compare the labs seats against those found under reservations
+    let reservationList = retrieveReservationList();
+
+
+}
+
+// temp
+function deleteAllReservations() {
+    localStorage.setItem("reservationList", JSON.stringify([]));
+    alert("All reservations removed successfully.");
 }
 
 //========================================================================================================
 
-// temp function to delete reservations
-function deleteAllReservations() {
-    localStorage.removeItem("reservationList");
-    alert("All reservations have been removed!");
-}
 // reserve and delete slots
-document.getElementById("reserveSlots").addEventListener("click", addReservation);
+document.getElementById("reserveSlot").addEventListener("click", addReservation);
 document.getElementById("removeReservations").addEventListener("click", deleteAllReservations);
 
-// update dropdowns
-document.getElementById("labSelect").addEventListener("change", updateTimeSelection());
-document.getElementById("labTime").addEventListener("change", updateSeatSelection());
-
-// refresh the site every min?
-//setInterval(60000);
+// 

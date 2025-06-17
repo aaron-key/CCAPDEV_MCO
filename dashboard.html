@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Lab Reservation Dashboard</title>
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    <h2>Welcome to the Lab Reservation System</h2>
+    <div id="dashboardSection">
+        <form id="reserveSection">
+            <label>Select Lab:</label>
+            <select id="selectLab"> <!--these values are temporary-->
+                <option value="default" selected disabled>---select a lab---</option>
+                <option value="labA">Lab A</option>
+                <option value="labB">Lab B</option>
+                <option value="labC1">Lab C1</option>
+                <option value="labC2">Lab C2</option>
+            </select><br>
+
+            <label>Select Date:</label>
+            <input id="selectDate" type="date"><br>
+
+            <label>Select Time:</label>
+            <select id="selectTime">
+                <option value="default" selected disabled>---select a time---</option>
+                <option value="10:00-10:30">10:00 - 10:30</option>
+                <option value="10:30-11:00">10:30 - 11:00</option>
+                <option value="11:00-11:30">11:00 - 11:30</option>
+            </select><br>
+
+            <label>Select Seat:</label>
+            <select id="selectSeat">
+                <option value="default" selected disabled>---select a seat---</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select><br>
+
+            <button id="reserveSlot">Reserve Slot</button>
+            <button id="removeReservations">Remove Reservations (temp)</button>
+        </form>
+        <table id="reservationView">
+            <!--update when lab selection changes-->
+        </table>
+        <button onclick="window.location.href='reservations.html'">View Reservations</button>
+        <button onclick="window.location.href='profile.html'">Settings</button>
+        <button id="logout">Logout</button>
+    </div>
+</body>
+</html>

@@ -75,7 +75,7 @@ const imageUpload = document.getElementById("imageUpload");
 
     // Back button logic
     document.getElementById("backToDashboard").addEventListener("click", function() {
-        window.location.href = "index.html";
+        window.location.href = "dashboard.html";
     });
 
     // Delete account logic
