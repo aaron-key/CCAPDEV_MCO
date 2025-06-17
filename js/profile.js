@@ -5,6 +5,7 @@ const imageUpload = document.getElementById("imageUpload");
     const displayNameInput = document.getElementById("displayName");
     const saveProfile = document.getElementById("saveProfile");
     const userSession = localStorage.getItem("userSession");
+    const deleteSection = document.getElementById("deleteSection");
 
     if (!userSession || userSession !== "loggedIn") {
         window.location.href = "auth.html"; // Kick back to auth if not logged in
@@ -12,13 +13,15 @@ const imageUpload = document.getElementById("imageUpload");
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const requestedUserEmail = urlParams.get("user"); // Get user email from URL
+    const requestedUserID = urlParams.get("user"); // Get user id (student id) from URL
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     
-    let profileKey = requestedUserEmail ? `profile_${requestedUserEmail}` : `profile_${currentUser.email}`;
+    let profileKey = requestedUserID && requestedUserID !== currentUser.studentID
+        ? `profile_${requestedUserID}`
+        : `profile_${currentUser.studentID}`;
     let userProfile = JSON.parse(localStorage.getItem(profileKey)) || {}; // ✅ Fetch specific profile
 
-    if (requestedUserEmail && requestedUserEmail !== currentUser.email) {
+    if (requestedUserID && requestedUserID !== currentUser.studentID) {
         // Viewing another user's profile
         if (!userProfile.displayName && !userProfile.description && !userProfile.image) {
             alert("User profile not found.");
@@ -27,7 +30,7 @@ const imageUpload = document.getElementById("imageUpload");
         }
 
         profileImage.src = userProfile.image || "img/default-avatar.jpg";
-        displayNameInput.value = userProfile.displayName || requestedUserEmail;
+        displayNameInput.value = userProfile.displayName || requestedUserID;
         profileDescription.value = userProfile.description || "No description available.";
 
         // Disable editing fields for another user's profile
@@ -69,7 +72,7 @@ const imageUpload = document.getElementById("imageUpload");
             displayName: displayNameInput.value.trim()
         };
 
-        localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(updatedProfile)); // stores profile data by email
+        localStorage.setItem(`profile_${currentUser.studentID}`, JSON.stringify(updatedProfile)); // stores profile data by student id
         alert("Profile updated successfully!");
     });
 
