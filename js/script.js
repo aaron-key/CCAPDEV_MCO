@@ -461,7 +461,8 @@ function addReservation() {
     let currentUser = JSON.parse(localStorage.getItem("currentUser"));
     let reservationList = retrieveReservationList();
     let reservationID = generateReservationID();
-    let studentID;
+    let currentUser = JSON.parse(localStorage.getItem("currentUser")); // gets current user from local storage
+    let studentID = currentUser.studentID; // sets student ID from current user
     let labID = document.getElementById("selectLab").value;
     let requestDate = new Date().toISOString();
     let reservedDate = document.getElementById("selectDate").value;

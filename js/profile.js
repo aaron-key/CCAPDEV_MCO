@@ -5,6 +5,7 @@ const imageUpload = document.getElementById("imageUpload");
     const displayNameInput = document.getElementById("displayName");
     const saveProfile = document.getElementById("saveProfile");
     const userSession = localStorage.getItem("userSession");
+    const deleteSection = document.getElementById("deleteSection");
 
     if (!userSession || userSession !== "loggedIn") {
         window.location.href = "auth.html"; // Kick back to auth if not logged in
@@ -12,22 +13,27 @@ const imageUpload = document.getElementById("imageUpload");
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const requestedUserEmail = urlParams.get("user"); // Get user email from URL
+    const requestedUserID = urlParams.get("user"); // Get user id (student id) from URL
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     
-    let profileKey = requestedUserEmail ? `profile_${requestedUserEmail}` : `profile_${currentUser.email}`;
+    let profileKey = requestedUserID && requestedUserID !== currentUser.studentID
+        ? `profile_${requestedUserID}`
+        : `profile_${currentUser.studentID}`;
     let userProfile = JSON.parse(localStorage.getItem(profileKey)) || {}; // ✅ Fetch specific profile
 
-    if (requestedUserEmail && requestedUserEmail !== currentUser.email) {
-        // Viewing another user's profile
+    const isOwnProfile = !requestedUserID || parseInt(requestedUserID) === currentUser.studentID;
+
+    if (!isOwnProfile) {
+        // Viewing non-existing user's profile
         if (!userProfile.displayName && !userProfile.description && !userProfile.image) {
             alert("User profile not found.");
-            window.location.href = "reservations.html";
+            window.location.href = "dashboard.html";
             return;
         }
 
         profileImage.src = userProfile.image || "img/default-avatar.jpg";
-        displayNameInput.value = userProfile.displayName || requestedUserEmail;
+        displayNameInput.value = userProfile.displayName || requestedUserID;
+        showUserReservations(parseInt(requestedUserID));
         profileDescription.value = userProfile.description || "No description available.";
 
         // Disable editing fields for another user's profile
@@ -41,6 +47,7 @@ const imageUpload = document.getElementById("imageUpload");
         if (userProfile.image) profileImage.src = userProfile.image;
         if (userProfile.description) profileDescription.value = userProfile.description;
         if (userProfile.displayName) displayNameInput.value = userProfile.displayName;
+        showUserReservations(currentUser.studentID);
     }
 
     // Image upload logic
@@ -69,7 +76,7 @@ const imageUpload = document.getElementById("imageUpload");
             displayName: displayNameInput.value.trim()
         };
 
-        localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(updatedProfile)); // stores profile data by email
+        localStorage.setItem(`profile_${currentUser.studentID}`, JSON.stringify(updatedProfile)); // stores profile data by student id
         alert("Profile updated successfully!");
     });
 
@@ -102,3 +109,31 @@ const imageUpload = document.getElementById("imageUpload");
         window.location.href = "auth.html";
     });
 });
+
+function showUserReservations(userID) {
+    const reservationTable = document.getElementById("userReservationTable");
+    const allReservations = retrieveReservationList();
+    const userReservations = allReservations.filter(r => r.studentID === parseInt(userID));
+
+    if (userReservations.length === 0) {
+        reservationTable.innerHTML = "<tr><td colspan='4' style='text-align:center;'>This user has no reservations yet.</td></tr>";
+        return;
+    }
+
+    reservationTable.innerHTML = "";
+
+    const header = reservationTable.insertRow();
+    ["Lab", "Date", "Time", "Seat"].forEach(label => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        header.appendChild(th);
+    });
+
+    userReservations.forEach(res => {
+        const row = reservationTable.insertRow();
+        row.insertCell().textContent = res.labID;
+        row.insertCell().textContent = res.reservedDate;
+        row.insertCell().textContent = res.reservedTime;
+        row.insertCell().textContent = res.reservedSeat;
+    });
+}
