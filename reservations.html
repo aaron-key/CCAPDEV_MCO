@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>Reservations</title>
-    <script src="js/script.js" defer></script> <!-- Include script.js for common functions -->
+    <script src="js/script.js" defer></script> 
     <script src="js/reservations.js" defer></script>
 </head>
 <body>
@@ -10,13 +10,23 @@
 
     <label>Select Lab:</label>
     <select id="selectLab">
-        <!---fills up with the same labs from dashboard-->
+        <option value="" selected disabled>---select a lab---</option>
     </select>
 
-    <table id="reservationView">
+    <div id="dateNavigation">
+        <button id="prevDay">← Previous</button>
+        <button id="nextDay">Next →</button>
+    </div>
 
-    </table>
+    <table id="studentReservations"><table>
 
+    <div id="reservationInfo"></div>
+
+    <select id="selectReservation">
+        <option value="" selected disabled>---select a reservation</option>
+    </select><br>
+
+    <button id="editReservation">Edit Reservation</button>
     <button id="deleteReservations">Delete Reservations</button>
 
     <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>

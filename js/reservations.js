@@ -35,10 +35,10 @@ function renderLabSchedule(labID) {
         seats.forEach(seat => {
             const cell = row.insertCell();
             const match = reservations.find(r =>
-                r.labID.toString() === labID.toString() &&
-                r.reservedDate === dateString &&
-                r.reservedTime === time.toString() &&
-                r.reservedSeat.toString() === seat.toString()
+                r.labID.toString() == labID.toString() &&
+                r.reservedDate == dateString &&
+                r.reservedTime == time.toString() &&
+                r.reservedSeat.toString() == seat.toString()
             );
 
             if (match) {
@@ -57,27 +57,122 @@ function renderLabSchedule(labID) {
     summary.textContent = `Seats available: ${available} / ${totalSlots} on ${dateString}`;
 }
 
+function renderStudentReservations(labID) {
+    const reservationView = document.getElementById("studentReservations");
+    const reservationList = retrieveReservationList();
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    const selectedLabID = document.getElementById("selectLab").value;
+
+    if(selectedLabID == "") return; // do not render if no lab was selected
+
+    const selectedLab = retrieveLabList().find(l => l.labID == selectedLabID);
+    const seats = selectedLab.seatList;
+    const slots = selectedLab.timeList; 
+
+    const selectedDay = new Date();
+    selectedDay.setDate(selectedDay.getDate() + dateOffset);
+    const dateString = selectedDay.toISOString().split("T")[0]; 
+
+    // do not display if no lab is selected or if current user is not a student
+    if (!selectedLab) return; 
+
+    // reset the reservation view
+    reservationView.innerHTML = ""; 
+
+    // header row
+    const header = reservationView.insertRow();
+    header.insertCell().textContent = "Time";
+    seats.forEach(seat => {
+        const th = document.createElement("th");
+        th.textContent = `Seat ${seat}`;
+        header.appendChild(th);
+    }); 
+
+    // table data
+    slots.forEach(time => {
+        const row = reservationView.insertRow();
+        row.insertCell().textContent = time;
+
+        seats.forEach(seat => {
+            const cell = row.insertCell();
+            const match = reservationList.find(r =>
+                r.labID.toString() == labID.toString() &&
+                r.reservedDate == dateString &&
+                r.reservedTime == time.toString() &&
+                r.reservedSeat.toString() == seat.toString() &&
+                r.studentID == currentUser.studentID // reservation must belong to the student
+            );
+
+            if (match) {
+                cell.textContent = "Reserved";
+            } else {
+                cell.textContent = "Open";
+            }
+        });
+    }); 
+}
+
+function displayReservationInfo(reservationID) {
+    const reservationInfo = document.getElementById("reservationInfo");
+    const rID = reservationID.slice(1);
+    const currentReservation = retrieveReservationList().find(r => r.reservationID == reservationID);
+    
+    // store current reservation info until page is left
+    localStorage.setItem("currentReservation", JSON.stringify(currentReservation));
+
+    // clear reservation info
+    reservationInfo.innerHTML = '';
+
+    // append information onto reservation info
+    Object.keys(currentReservation).forEach(key => {
+        const p = document.createElement("p");
+        p.textContent = `${key}: ${currentReservation[key]}`;
+        reservationInfo.appendChild(p);
+        reservationInfo.appendChild(document.createElement("br"));
+    });
+}
+
 document.getElementById("selectLab").addEventListener("change", () => {
-    const selectedLab = document.getElementById("selectLab").value;
-    renderLabSchedule(selectedLab);
+    const labID = document.getElementById("selectLab").value;
+
+    if(window.location.href.endsWith("reservations.html")) {
+        renderStudentReservations(labID)
+    } else {
+        renderLabSchedule(labID);
+    }
 });
 
-// calls the function to render the schedule on page load
+// calls the function to render the schedule on page load (dashboard / reservations)
 document.addEventListener("DOMContentLoaded", () => {
-    const labSelector = document.getElementById("selectLab");
-    renderLabSchedule(labSelector.value);
+    const labID = document.getElementById("selectLab").value;
+
+    if(window.location.href.endsWith("reservations.html")) {
+        renderStudentReservations(labID)
+    } else {
+        renderLabSchedule(labID);
+    }
 });
 
 document.getElementById("nextDay").addEventListener("click", () => {
     if (dateOffset < 6) {
         dateOffset++;
-        renderLabSchedule(document.getElementById("selectLab").value);
+
+        if(window.location.href.endsWith("reservations.html")) {
+            renderStudentReservations(document.getElementById("selectLab").value);
+        } else {
+            renderLabSchedule(document.getElementById("selectLab").value);
+        }
     }
 });
 
 document.getElementById("prevDay").addEventListener("click", () => {
     if (dateOffset > 0) {
         dateOffset--;
-        renderLabSchedule(document.getElementById("selectLab").value);
+        
+        if(window.location.href.endsWith("reservations.html")) {
+            renderStudentReservations(document.getElementById("selectLab").value);
+        } else {
+            renderLabSchedule(document.getElementById("selectLab").value);
+        }
     }
 });

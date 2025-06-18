@@ -21,9 +21,6 @@ document.getElementById("logout").addEventListener("click", function() {
     window.location.href = "auth.html"; // Redirect to login/register page
 });
 
-// initialize dashboard
-document.addEventListener("DOMContentLoaded", initializeDashboard);
-
 // update options / view when new options are selected
 document.getElementById("selectLab").addEventListener("change", function(event) {
     updateSelectSeat();
@@ -42,23 +39,12 @@ document.getElementById("reserveSlot").addEventListener("click", function(event)
     renderLabSchedule(document.getElementById("selectLab").value);
 });
 
-document.getElementById("removeReservations").addEventListener("click", function(event) {
-    deleteAllReservations();
-    viewLab();
-    initializeDashboard();
-});
-
 // create and delete labs
 document.getElementById("createLab").addEventListener("click", function(event) {
     addLab();
     updateSelectLab();
     renderLabSchedule(document.getElementById("selectLab").value);
     console.log("successful");
-});
-
-document.getElementById("removeLabs").addEventListener("click", function(event) {
-    deleteAllLabs();
-    initializeDashboard();
 });
 
 // lab creation =====================================================
@@ -213,81 +199,6 @@ function addLab() {
     localStorage.setItem("labList", JSON.stringify(labList));
     alert("Lab added successfully");
 }
-
-// function viewLab() {
-//     let labList = retrieveLabList();
-//     let reservationList = retrieveReservationList();
-//     let tableHeader = document.createElement("tr");
-//     let date = document.getElementById("selectDate").value;
-//     let currentLabID = document.getElementById("selectLab").value;
-//     let currentLab;
-//     let currentLabReserveList = [];
-
-//     console.log(date);
-
-//     // find the lab, retrieve reservations for the lab on the specified date
-//     currentLab = labList.find(l => l.labID == currentLabID);
-
-//     // exit function is lab is not found / selected
-//     if(!currentLab) {
-//         table.innerHTML = ""; // do not display content is lab is not found
-//         return;
-//     }
-
-//     for(let i = 0; i < reservationList.length; i++) {
-//         if(reservationList[i].labID == currentLabID && reservationList[i].reservedDate == date) {
-//             currentLabReserveList.push(reservationList[i]);
-//         }
-//     }
-
-//     console.log(currentLabReserveList);
-
-//     // clear and create new the table header, depending on slots
-//     table.innerHTML = "";
-//     tableHeader.appendChild(document.createElement("th"));
-
-//     currentLab.seatList.forEach(s => {
-//         let seat = document.createElement("th");
-//         seat.textContent = s;
-//         tableHeader.appendChild(seat);
-//     });
-
-//     table.appendChild(tableHeader);
-
-//     // populate the table in this format; 
-//     /*
-//                 seat   seat   seat
-//     time slot |taken |      |      |
-//     time slot |free  |      |      |
-//     time slot |free  |      |      |
-
-//     */
-
-//     currentLab.timeList.forEach(t => {
-//         let row = document.createElement("tr");
-//         let rowHeader = document.createElement("td");
-//         rowHeader.textContent = t;
-//         row.appendChild(rowHeader);
-
-//         // for each seat at a given time, check if its "taken"
-//         currentLab.seatList.forEach(s => {
-//             let rowData = document.createElement("td");
-
-//             console.log(currentLabReserveList.find(r => r.reservedSeat == s));
-//             console.log(currentLabReserveList.find(r => r.reservedTime == t));
-
-//             if(currentLabReserveList.some(r => r.reservedSeat == s && r.reservedTime == t)) {
-//                 rowData.textContent = "taken";
-//             } else {
-//                 rowData.textContent = "";
-//             }
-
-//             row.appendChild(rowData);
-//         });
-
-//         table.appendChild(row);
-//     });
-// }
 
 function editLab() {
 
@@ -544,8 +455,9 @@ function addReservation() {
     // retrieve info from form and retrieve reservation list
     let currentUser = JSON.parse(localStorage.getItem("currentUser"));
     let reservationList = retrieveReservationList();
+    let studentList = retrieveStudentList();
     let reservationID = generateReservationID();
-    let studentID = currentUser.studentID; // sets student ID from current user
+    let studentID; 
     let labID = document.getElementById("selectLab").value;
     let requestDate = new Date().toISOString();
     let reservedDate = document.getElementById("selectDate").value;
@@ -557,10 +469,18 @@ function addReservation() {
 
     // assign student based on the user (student or tech)
     if(Object.hasOwn(currentUser, "studentID")) {
-        studentID = currentUser.studentID;
+        studentID = currentUser.studentID; // if current user is already a student
     } else {
-        studentID = document.getElementById("studentIDInput").value;
+        studentID = document.getElementById("studentIDInput").value; // if lab tech is making reservation for a student
     }
+
+    // if student inputted does not exist
+    if(!studentList.some(s => s.studentID == studentID)) {
+        alert("Student ID does not exist.");
+        return;
+    }
+
+    
 
     // check for overlapping reservations
     hasOverlap = reservationList.some(reservation =>
@@ -606,88 +526,6 @@ function addReservation() {
     alert("Reservation added successfully"); 
 }
 
-function viewStudentReservation() {
-    let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    let reservationList = retrieveReservationList();
-    let table = document.getElementById("reservationView");
-}
-
-function viewLabReservation() {
-    // let labList = retrieveLabList();
-    // let reservationList = retrieveReservationList();
-    // let table = document.getElementById("labView");
-    // let tableHeader = document.createElement("tr");
-    // let date = document.getElementById("selectDate").value;
-    // let currentLabID = document.getElementById("selectLab").value;
-    // let currentLab;
-    // let currentLabReserveList = [];
-
-    // console.log(date);
-
-    // // find the lab, retrieve reservations for the lab on the specified date
-    // currentLab = labList.find(l => l.labID == currentLabID);
-
-    // // exit function is lab is not found / selected
-    // if(!currentLab) {
-    //     table.innerHTML = ""; // do not display content is lab is not found
-    //     return;
-    // }
-
-    // for(let i = 0; i < reservationList.length; i++) {
-    //     if(reservationList[i].labID == currentLabID && reservationList[i].reservedDate == date) {
-    //         currentLabReserveList.push(reservationList[i]);
-    //     }
-    // }
-
-    // console.log(currentLabReserveList);
-
-    // // clear and create new the table header, depending on slots
-    // table.innerHTML = "";
-    // tableHeader.appendChild(document.createElement("th"));
-
-    // currentLab.seatList.forEach(s => {
-    //     let seat = document.createElement("th");
-    //     seat.textContent = s;
-    //     tableHeader.appendChild(seat);
-    // });
-
-    // table.appendChild(tableHeader);
-
-    // // populate the table in this format; 
-    // /*
-    //             seat   seat   seat
-    // time slot |taken |      |      |
-    // time slot |free  |      |      |
-    // time slot |free  |      |      |
-
-    // */
-
-    // currentLab.timeList.forEach(t => {
-    //     let row = document.createElement("tr");
-    //     let rowHeader = document.createElement("td");
-    //     rowHeader.textContent = t;
-    //     row.appendChild(rowHeader);
-
-    //     // for each seat at a given time, check if its "taken"
-    //     currentLab.seatList.forEach(s => {
-    //         let rowData = document.createElement("td");
-
-    //         console.log(currentLabReserveList.find(r => r.reservedSeat == s));
-    //         console.log(currentLabReserveList.find(r => r.reservedTime == t));
-
-    //         if(currentLabReserveList.some(r => r.reservedSeat == s && r.reservedTime == t)) {
-    //             rowData.textContent = "taken";
-    //         } else {
-    //             rowData.textContent = "";
-    //         }
-
-    //         row.appendChild(rowData);
-    //     });
-
-    //     table.appendChild(row);
-    // });
-}
-
 function editReservation() {
     // get reservation ID to edit reservation details
 }
@@ -695,32 +533,4 @@ function editReservation() {
 function deleteReservation() {
     let reservationList = retrieveReservationList();
 
-}
-
-// Lab Selector Logic ================================================== (populates the lab selector dropdown on page load)
-function populateLabSelector() {
-    const labSelector = document.getElementById("labSelector");
-    const labList = retrieveLabList();
-
-    labSelector.innerHTML = "";
-
-    labList.forEach(lab => {
-        const option = document.createElement("option");
-        option.value = lab.labID;
-        option.textContent = lab.labID;
-        labSelector.appendChild(option);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", populateLabSelector);
-
-// temp
-function deleteAllReservations() {
-    localStorage.setItem("reservationList", JSON.stringify([]));
-    alert("All reservations have been removed successfully.");
-}
-
-function deleteAllLabs() {
-    localStorage.setItem("labList", JSON.stringify([]));
-    alert("All labs have been removed successfully.");
 }

@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const requestedUserID = urlParams.get("user"); // Get user id (student id) from URL
+    const requestedUserID = urlParams.get("student") || urlParams.get("tech"); // Get user id (student id) from URL
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     
     let profileKey = requestedUserID && requestedUserID !== currentUser.studentID
@@ -25,11 +25,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (!isOwnProfile) {
         // Viewing non-existing user's profile
-        if (!userProfile.displayName && !userProfile.description && !userProfile.image) {
-            alert("User profile not found.");
-            window.location.href = "dashboard.html";
-            return;
-        }
+        // if (!userProfile.displayName && !userProfile.description && !userProfile.image) {
+        //     alert("User profile not found.");
+        //     window.location.href = "dashboard.html";
+        //     return;
+        // }
 
         profileImage.src = userProfile.image || "img/default-avatar.jpg";
         displayNameInput.value = userProfile.displayName || requestedUserID;
@@ -64,19 +64,48 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Save profile logic
     saveProfile.addEventListener("click", function() {
+        let studentList = retrieveStudentList();
+        let techList = retrieveLabList();
+        let userData;
+
         const currentUser = JSON.parse(localStorage.getItem("currentUser"));
         if (!currentUser || !currentUser.email) {
             alert("Error: No logged-in user detected.");
             return;
         }
 
-        const updatedProfile = {
-            image: profileImage.src,
-            description: profileDescription.value.trim(),
-            displayName: displayNameInput.value.trim()
-        };
+        // const updatedProfile = {
+        //     image: profileImage.src,
+        //     description: profileDescription.value.trim(),
+        //     displayName: displayNameInput.value.trim()
+        // };
 
-        localStorage.setItem(`profile_${currentUser.studentID}`, JSON.stringify(updatedProfile)); // stores profile data by student id
+        // localStorage.setItem(`profile_${currentUser.studentID}`, JSON.stringify(updatedProfile)); // stores profile data by student id
+
+        // append profile data to appropriate user
+        if(Object.hasOwn(currentUser, "studentID")) { // if current user is a student
+            userData = studentList.find(s => s.studentID == currentUser.studentID);
+
+            console.log("before: " + studentList[studentList.indexOf(studentList.find(s => s.studentID == userData.studentID))].description);
+            console.log(studentList[studentList.indexOf(studentList.find(s => s.studentID == userData.studentID))].studentID);
+
+            // add / edit profile values, replacing the ones for the student in student list
+            Object.defineProperty(userData, "image", {value: profileImage.src});
+            Object.defineProperty(userData, "description", {value: profileDescription.value.trim()});
+            Object.defineProperty(userData, "displayName", {value: displayNameInput});
+
+            console.log("after: " + studentList[studentList.indexOf(studentList.find(s => s.studentID == userData.studentID))].description);
+            console.log(studentList[studentList.indexOf(studentList.find(s => s.studentID == userData.studentID))].studentID);
+        } else { // if current user is a lab tech
+            userData = techList.find(s => s.techID == currentUser.techID);
+
+            Object.defineProperty(userData, "image", {value: profileImage.src});
+            Object.defineProperty(userData, "description", {value: profileDescription.value.trim()});
+            Object.defineProperty(userData, "displayName", {value: displayNameInput});
+        }
+        
+        localStorage.setItem("studentList", JSON.stringify(studentList));
+        localStorage.setItem("techList", JSON.stringify(techList));
         alert("Profile updated successfully!");
     });
 
