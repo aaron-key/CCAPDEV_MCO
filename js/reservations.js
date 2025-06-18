@@ -44,8 +44,11 @@ function renderLabSchedule(labID) {
     currentDay.setDate(currentDay.getDate() + dateOffset);
     const dateString = currentDay.toISOString().split("T")[0];
     const reservations = retrieveReservationList();
-    const seats = ["A", "B", "C"];
-    const timeSlots = ["10:00-10:30", "10:30-11:00", "11:00-11:30"];
+    const selectedLab = retrieveLabList().find(l => l.labID === labID);
+    if (!selectedLab) return;
+
+    const seats = selectedLab.seatList;
+    const timeSlots = selectedLab.timeList;
 
     let totalSlots = seats.length * timeSlots.length;
     let reservedCount = 0;
@@ -68,10 +71,10 @@ function renderLabSchedule(labID) {
         seats.forEach(seat => {
             const cell = row.insertCell();
             const match = reservations.find(r =>
-                r.labID === labID &&
+                r.labID.toString() === labID.toString() &&
                 r.reservedDate === dateString &&
-                r.reservedTime === time &&
-                r.reservedSeat === seat
+                r.reservedTime === time.toString() &&
+                r.reservedSeat.toString() === seat.toString()
             );
 
             if (match) {
