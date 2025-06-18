@@ -104,12 +104,44 @@ function renderStudentReservations(labID) {
             );
 
             if (match) {
-                cell.textContent = "Reserved";
+                cell.textContent = `Reserve (${match.reservationID})`;
             } else {
                 cell.textContent = "Open";
             }
         });
     }); 
+}
+
+function updateSelectReservation() {
+    const select = document.getElementById("selectReservation");
+    const reservationList = retrieveLabList();
+    const defaultOption = document.createElement("option");
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if(!Object.hasOwn(currentUser, "studentID")) return;
+
+    // filter reservations belonging to the current day + student
+    //const currentReservations = reservationList.filter(r => r.)
+
+    const currentDay = new Date();
+    currentDay.setDate(currentDay.getDate() + dateOffset);
+    const dateString = currentDay.toISOString().split("T")[0];
+
+    // clear selection
+    select.innerHTML = "";
+    defaultOption.value = "";
+    defaultOption.text = "---select a lab---";
+    defaultOption.selected = true;
+    defaultOption.disabled = true;
+    select.appendChild(defaultOption);
+
+    // populate reservation select
+    for(let i = 0; i < currentReservations.length; i++) {
+        let option = document.createElement("option");
+        let rID = currentReservations[i].reservationID;
+        option.value = rID;
+        option.textContent = `Reservation: ${rID}`;
+        option.appendChild(option);
+    }
 }
 
 function displayReservationInfo(reservationID) {
@@ -147,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const labID = document.getElementById("selectLab").value;
 
     if(window.location.href.endsWith("reservations.html")) {
-        renderStudentReservations(labID)
+        renderStudentReservations(labID);
     } else {
         renderLabSchedule(labID);
     }
