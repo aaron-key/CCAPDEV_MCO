@@ -1,0 +1,174 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    padding-top: 70px;
+    overflow-y: auto;
+}
+
+/* dashboard sections */
+#dashboardSection {
+    padding-top: 40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* reservation & lab sections */
+#reserveSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 90%;
+    max-width: 700px;
+    margin: auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* labels & inputs */
+label {
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+/* reservation table */
+#reservationView {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    text-align: center;
+}
+
+#reservationView th, #reservationView td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+#reservationView tr:nth-child(even) {
+    background: #f2f2f2;
+}
+
+/* full-width header */
+#topNav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    background: #005602;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    z-index: 1000;
+    color: white;
+}
+
+
+
+/* navigation menu */
+#menuContainer {
+    position: relative;
+}
+
+#menuButton {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* dropdown */
+#menuDropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    min-width: 160px;
+}
+
+#menuDropdown a {
+    display: block;
+    padding: 8px;
+    text-decoration: none;
+    color: black;
+}
+
+#menuDropdown a:hover {
+    background: #f2f2f2;
+}
+
+/* show dropdown when clicking menu button */
+#menuButton:focus + #menuDropdown,
+#menuDropdown:hover {
+    display: block;
+}
+
+/* buttons */
+button {
+    width: 100%;
+    padding: 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+    padding: 8px;
+    font-size: 14px;
+}
+
+#dateNavigation {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+#dateNavigation button {
+    width: auto;
+    padding: 8px 12px;
+}
+
+
+#buttonContainer {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+#buttonContainer button {
+    width: auto;
+    padding: 8px 12px;
+}
+
+
+#dashboardSection button {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+
+button:hover {
+    background: #218838;
+}
