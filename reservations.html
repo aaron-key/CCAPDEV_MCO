@@ -4,6 +4,7 @@
     <title>Reservations</title>
     <script src="js/script.js" defer></script> 
     <script src="js/reservations.js" defer></script>
+    <link rel="stylesheet" href="css/reservations.css">
 </head>
 <body>
     <h2>Lab Reservations</h2>
@@ -26,9 +27,11 @@
         <option value="" selected disabled>---select a reservation</option>
     </select><br>
 
-    <button id="editReservation">Edit Reservation</button>
-    <button id="deleteReservations">Delete Reservations</button>
+    <div id="buttonContainer">
+        <button id="editReservation">Edit Reservation</button>
+        <button id="deleteReservations">Delete Reservations</button>
+        <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+    </div>
 
-    <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
 </body>
 </html>
