@@ -15,12 +15,12 @@
                 <option value="" selected disabled>---select a lab---</option>
             </select><br>
 
-            <table id="labView">
-                <!---update when lab selection changes-->
-            </table><br>
-
             <label>Select Date:</label>
             <input id="selectDate" type="date"><br>
+
+            <table id="labView">
+                <!---updates when lab selection changes-->
+            </table><br>
 
             <label>Select Time:</label>
             <select id="selectTime">
@@ -32,6 +32,7 @@
                 <option value="" selected disabled>---select a seat---</option>
             </select><br>
 
+            <label id="isAnonLabel">Anonymous:</label><input id="isAnon" type="checkbox">
             <label id="studentIDLabel">Student ID:</label><input id="studentIDInput" type="text"><br>
 
             <button id="reserveSlot">Reserve Slot</button>

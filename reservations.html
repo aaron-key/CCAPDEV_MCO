@@ -2,36 +2,23 @@
 <html lang="en">
 <head>
     <title>Reservations</title>
-    <script src="js/reservations.js" defer></script>
     <script src="js/script.js" defer></script> <!-- Include script.js for common functions -->
+    <script src="js/reservations.js" defer></script>
 </head>
 <body>
     <h2>Lab Reservations</h2>
 
     <label>Select Lab:</label>
-    <select id="labFilter">
-        <option value="all">All Labs</option>
-        <option value="labA">Lab A</option>
-        <option value="labB">Lab B</option>
-        <option value="labC1">Lab C1</option>
-        <option value="labC2">Lab C2</option>
+    <select id="selectLab">
+        <!---fills up with the same labs from dashboard-->
     </select>
-    <button id="filterReservations">Filter</button>
 
-    <table id="reservationsTable">
-        <thead>
-            <tr>
-                <th>Lab</th>
-                <th>Time Slot</th>
-                <th>Seat</th>
-                <th>Reserved By</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- values from reservations are added here -->
-        </tbody>
+    <table id="reservationView">
+
     </table>
 
-    <button onclick="window.location.href='index.html'">Back to Dashboard</button>
+    <button id="deleteReservations">Delete Reservations</button>
+
+    <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
 </body>
 </html>

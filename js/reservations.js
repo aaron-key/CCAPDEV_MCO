@@ -1,5 +1,42 @@
 let dateOffset = 0;
 
+function initializeReservations() {
+    let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    
+    updateSelectLab();
+
+    // hide technician functions from student view, and vice verse
+    // loading tables
+    if(Object.hasOwn(currentUser, "studentID")) { // student
+        document.getElementById().remove();
+    } else {                                      // technician
+
+    }
+
+    // let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    // let selectDate = document.getElementById("selectDate");
+
+    // const today = new Date();
+    // const year = today.getFullYear();
+    // const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    // const day = String(today.getDate()).padStart(2, '0');
+    // const todayString = `${year}-${month}-${day}`;
+    
+    // updateSelectLab();
+    // generateStartTimeSlots();
+    // selectDate.setAttribute("min", todayString); // set date select so that passed days cannot be selected
+
+    // // hide technician functions from student view
+    // if(Object.hasOwn(currentUser, "studentID")) {
+    //     document.getElementById("studentIDInput").remove();
+    //     document.getElementById("studentIDLabel").remove();
+    //     document.getElementById("labSection").remove();
+    // } else {
+    //     document.getElementById("isAnonLabel").remove();
+    //     document.getElementById("isAnon").remove();
+    // }
+}
+
 function renderLabSchedule(labID) {
     const reservationView = document.getElementById("reservationView");
     const summary = document.getElementById("seatSummary");

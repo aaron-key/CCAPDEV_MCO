@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-const imageUpload = document.getElementById("imageUpload");
+    const imageUpload = document.getElementById("imageUpload");
     const profileImage = document.getElementById("profileImage");
     const profileDescription = document.getElementById("profileDescription");
     const displayNameInput = document.getElementById("displayName");
