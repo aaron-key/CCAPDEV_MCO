@@ -103,44 +103,57 @@ function renderStudentReservations(labID) {
                 r.studentID == currentUser.studentID // reservation must belong to the student
             );
 
+            const closed = reservationList.find(r =>
+                r.labID.toString() == labID.toString() &&
+                r.reservedDate == dateString &&
+                r.reservedTime == time.toString() &&
+                r.reservedSeat.toString() == seat.toString()
+            )
+
             if (match) {
-                cell.textContent = `Reserve (${match.reservationID})`;
+                cell.textContent = `Reserved (${match.reservationID})`; 
+            } else if (closed) {
+                cell.textContent = "Closed";
             } else {
                 cell.textContent = "Open";
             }
         });
     }); 
+
+    updateSelectReservation();
 }
 
 function updateSelectReservation() {
     const select = document.getElementById("selectReservation");
-    const reservationList = retrieveLabList();
+    const reservationList = retrieveReservationList();
     const defaultOption = document.createElement("option");
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if(!Object.hasOwn(currentUser, "studentID")) return;
-
-    // filter reservations belonging to the current day + student
-    //const currentReservations = reservationList.filter(r => r.)
 
     const currentDay = new Date();
     currentDay.setDate(currentDay.getDate() + dateOffset);
     const dateString = currentDay.toISOString().split("T")[0];
 
+    // filter reservations belonging to the current day + student
+    const currentReservations = reservationList.filter(r => r.studentID == currentUser.studentID && 
+                                                       r.reservedDate == dateString);
+
     // clear selection
     select.innerHTML = "";
     defaultOption.value = "";
-    defaultOption.text = "---select a lab---";
+    defaultOption.text = "---select a reservation---";
     defaultOption.selected = true;
     defaultOption.disabled = true;
     select.appendChild(defaultOption);
 
-    // populate reservation select
+    // populate reservation selection
     for(let i = 0; i < currentReservations.length; i++) {
         let option = document.createElement("option");
         let rID = currentReservations[i].reservationID;
         option.value = rID;
         option.textContent = `Reservation: ${rID}`;
-        option.appendChild(option);
+        
+        select.appendChild(option);
     }
 }
 
@@ -164,11 +177,36 @@ function displayReservationInfo(reservationID) {
     });
 }
 
+function deleteReservation() {
+    const selectedReservation = document.getElementById("selectReservation").value;
+    const selectedReservationID = selectedReservation.replace("Reservation: ", "");
+    let reservationList = retrieveReservationList();
+    let newReservationList;
+
+    // do not delete if no lab was selected 
+    if(selectedReservation == "") {
+        alert("Please select a reservation");
+        return;
+    }
+
+    console.log(reservationList.find(r => r.reservationID == selectedReservationID));
+    console.log(reservationList.indexOf(reservationList.find(r => r.reservationID == selectedReservationID)));
+
+    newReservationList = reservationList.splice(reservationList.indexOf(reservationList.find(r => r.reservationID == selectedReservationID)), 1);
+
+    console.log(selectedReservation);
+    console.log(reservationList);
+    console.log(newReservationList);
+
+    alert("Reservation removed.");
+    localStorage.setItem("reservationList", JSON.stringify(newReservationList));
+}
+
 document.getElementById("selectLab").addEventListener("change", () => {
     const labID = document.getElementById("selectLab").value;
 
     if(window.location.href.endsWith("reservations.html")) {
-        renderStudentReservations(labID)
+        renderStudentReservations(labID);
     } else {
         renderLabSchedule(labID);
     }
@@ -184,6 +222,13 @@ document.addEventListener("DOMContentLoaded", () => {
         renderLabSchedule(labID);
     }
 });
+
+// document.getElementById("deleteReservation").addEventListener("click", () => {
+//     const labID = document.getElementById("selectLab").value;
+
+//     //deleteReservation();
+//     renderStudentReservations(labID);
+// });
 
 document.getElementById("nextDay").addEventListener("click", () => {
     if (dateOffset < 6) {

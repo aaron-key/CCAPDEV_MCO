@@ -525,12 +525,3 @@ function addReservation() {
     localStorage.setItem("reservationList", JSON.stringify(reservationList));
     alert("Reservation added successfully"); 
 }
-
-function editReservation() {
-    // get reservation ID to edit reservation details
-}
-
-function deleteReservation() {
-    let reservationList = retrieveReservationList();
-
-}
