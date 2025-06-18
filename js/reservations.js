@@ -34,10 +34,10 @@ function renderLabSchedule(labID) {
         seats.forEach(seat => {
             const cell = row.insertCell();
             const match = reservations.find(r =>
-                r.labID === labID &&
+                r.labID.toString() === labID.toString() &&
                 r.reservedDate === dateString &&
-                r.reservedTime === time &&
-                r.reservedSeat === seat
+                r.reservedTime === time.toString() &&
+                r.reservedSeat.toString() === seat.toString()
             );
 
             if (match) {
