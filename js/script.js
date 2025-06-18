@@ -2,11 +2,12 @@
 // If logged in, show the dashboard; otherwise, show auth.html
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    const userSession = localStorage.getItem("userSession"); console.log(userSession);
-
-    if(userSession !== "loggedIn" || !userSession) {
-        localStorage.removeItem("userSession");
-        window.localStorage.href = "auth.html";
+    const userSession = localStorage.getItem("userSession");
+    
+    if (!userSession || userSession !== "loggedIn") { // prevents redirects on auth.html (this is to prevent infinite redirects)
+        if (!window.location.href.includes("auth.html")) { 
+            window.location.href = "auth.html";
+        }
     }
 
     initializeDashboard();
@@ -42,7 +43,7 @@ document.getElementById("removeReservations").addEventListener("click", function
 
 // create and delete labs
 document.getElementById("createLab").addEventListener("click", addLab);
-document.getElementById("removeLabs").addEventListener("click", deleteAllLabs, function() {
+document.getElementById("removeLabs").addEventListener("click", function() {
     deleteAllLabs();
     initializeDashboard();
 });
@@ -192,13 +193,14 @@ function addLab() {
 
     // create new lab, push onto lab list, and store locally
     newLab = {
-        labID: labID,
+        labID: labID.toString(),    // ensures labID is a string
         seatList: seatList,
         timeList: timeList
     }
 
     labList.push(newLab);
     localStorage.setItem("labList", JSON.stringify(labList));
+    populateLabSelector(); // repopulate the lab selector dropdown
     alert("Lab added successfully");
 }
 
@@ -365,21 +367,14 @@ function retrieveTechList() {
 
 function retrieveLabList() {
     let listString = localStorage.getItem("labList");
-    let list = [];
-
-    if(listString) {
-        try {
-            list = JSON.parse(listString);
-
-            if(!Array.isArray(list)) {
-                list = [];
-            }
-        } catch (e) {
-            list = [];
-        }
+    
+    try {
+        let list = JSON.parse(listString);
+        if (!Array.isArray(list)) return [];
+        return list;
+    } catch (error) {
+        return [];
     }
-
-    return list;
 }
 
 function retrieveReservationList() {
@@ -434,13 +429,14 @@ function generateLabID() {
     let list = retrieveLabList();
     let id = 0;
 
-    for(let i = 0; i < list.length; i++) {
-        if(id < list[i].labID) {
-            id = list[i].labID;
+    for (let i = 0; i < list.length; i++) {
+        let numericID = parseInt(list[i].labID); // converts IDs to numbers for comparison
+        if (!isNaN(numericID) && id < numericID) {
+            id = numericID; // keeps track of the highest numeric lab ID
         }
     }
 
-    return id + 1;
+    return (id + 1).toString(); // returns new lab ID as a string
 }
 
 function generateReservationID() {
@@ -461,7 +457,6 @@ function addReservation() {
     let currentUser = JSON.parse(localStorage.getItem("currentUser"));
     let reservationList = retrieveReservationList();
     let reservationID = generateReservationID();
-    let currentUser = JSON.parse(localStorage.getItem("currentUser")); // gets current user from local storage
     let studentID = currentUser.studentID; // sets student ID from current user
     let labID = document.getElementById("selectLab").value;
     let requestDate = new Date().toISOString();
@@ -540,6 +535,23 @@ function updateSeatSelection() {
 
 
 }
+
+// Lab Selector Logic ================================================== (populates the lab selector dropdown on page load)
+function populateLabSelector() {
+    const labSelector = document.getElementById("labSelector");
+    const labList = retrieveLabList();
+
+    labSelector.innerHTML = "";
+
+    labList.forEach(lab => {
+        const option = document.createElement("option");
+        option.value = lab.labID;
+        option.textContent = lab.labID;
+        labSelector.appendChild(option);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", populateLabSelector);
 
 // temp
 function deleteAllReservations() {

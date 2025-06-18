@@ -7,8 +7,11 @@ function renderLabSchedule(labID) {
     currentDay.setDate(currentDay.getDate() + dateOffset);
     const dateString = currentDay.toISOString().split("T")[0];
     const reservations = retrieveReservationList();
-    const seats = ["A", "B", "C"];
-    const timeSlots = ["10:00-10:30", "10:30-11:00", "11:00-11:30"];
+    const selectedLab = retrieveLabList().find(l => l.labID === labID);
+    if (!selectedLab) return;
+
+    const seats = selectedLab.seatList;
+    const timeSlots = selectedLab.timeList;
 
     let totalSlots = seats.length * timeSlots.length;
     let reservedCount = 0;
