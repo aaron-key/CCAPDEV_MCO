@@ -9,7 +9,7 @@
 <body>
     <h2>Welcome to the Lab Reservation System</h2>
     <div id="dashboardSection">
-        <form id="reserveSection">
+        <div id="reserveSection">
             <label>Select Lab:</label>
             <select id="selectLab">
                 <option value="" selected disabled>---select a lab---</option>
@@ -18,9 +18,17 @@
             <label>Select Date:</label>
             <input id="selectDate" type="date"><br>
 
-            <table id="labView">
-                <!---updates when lab selection changes-->
+            <h3 id="currentDateLabel"></h3>
+            <button id="prevDay">← Previous</button>
+            <button id="nextDay">Next →</button>
+
+
+            <div id="seatSummary"></div>
+            
+            <table id="reservationView">
+                <!--update when lab selection changes-->
             </table><br>
+
 
             <label>Select Time:</label>
             <select id="selectTime">
@@ -36,9 +44,9 @@
             <label id="studentIDLabel">Student ID:</label><input id="studentIDInput" type="text"><br>
 
             <button id="reserveSlot">Reserve Slot</button>
-        </form><br>
+        </div><br>
 
-        <form id="labSection">
+        <div id="labSection">
             <label>Select Lab Start Time:</label>
             <select id=selectLabStartTime>
                 <option value="" selected disabled>---select a time---</option>
@@ -53,23 +61,8 @@
             <input id="labSeatCountInput"><br>
 
             <button id="createLab">Create Lab</button>
-        </form>
+        </div>
 
-        <h3 id="currentDateLabel"></h3>
-        <button id="prevDay">← Previous</button>
-        <button id="nextDay">Next →</button>
-        <label for="labSelector">Choose Lab:</label>
-        <select id="labSelector">
-            <option value="labA">Lab A</option>
-            <option value="labB">Lab B</option>
-            <option value="labC1">Lab C1</option>
-            <option value="labC2">Lab C2</option>
-        </select>
-        <div id="seatSummary"></div>
-        
-        <table id="reservationView">
-            <!--update when lab selection changes-->
-        </table>
 
         <!---temp buttons for testing-->
         <br>
